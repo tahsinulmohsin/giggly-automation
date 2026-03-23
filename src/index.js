@@ -6,7 +6,7 @@ import { initDatabase, getUnprocessedUrls, markUrlProcessed, upsertProduct,
   getUploadedProducts, updateStockStatus, getStats } from './db/database.js';
 import { monitorSitemaps } from './scrapers/sitemap-monitor.js';
 import { scrapeGadgetHouseProduct } from './scrapers/gadgethouse-scraper.js';
-import { scrapeDropShopProduct } from './scrapers/dropshop-scraper.js';
+import { scrapeGadgetTrackProduct } from './scrapers/gadgettrack-scraper.js';
 import { processProduct } from './processors/name-replacer.js';
 import { uploadProduct, updateProductStock } from './uploaders/woo-uploader.js';
 import config from './config.js';
@@ -53,8 +53,8 @@ async function stepScrape(limit = 50) {
 
     if (urlRecord.source_site === 'gadgetHouse') {
       product = await scrapeGadgetHouseProduct(urlRecord.url);
-    } else if (urlRecord.source_site === 'dropShop') {
-      product = await scrapeDropShopProduct(urlRecord.url);
+    } else if (urlRecord.source_site === 'gadgetTrack') {
+      product = await scrapeGadgetTrackProduct(urlRecord.url);
     }
 
     if (product) {
@@ -128,8 +128,8 @@ async function stepSyncStock() {
     let currentProduct = null;
     if (product.source_site === 'gadgetHouse') {
       currentProduct = await scrapeGadgetHouseProduct(product.source_url);
-    } else if (product.source_site === 'dropShop') {
-      currentProduct = await scrapeDropShopProduct(product.source_url);
+    } else if (product.source_site === 'gadgetTrack') {
+      currentProduct = await scrapeGadgetTrackProduct(product.source_url);
     }
 
     if (currentProduct && currentProduct.stock_status !== product.stock_status) {
