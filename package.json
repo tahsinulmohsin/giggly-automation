@@ -1,0 +1,33 @@
+{
+  "name": "giggly-product-automation",
+  "version": "1.0.0",
+  "description": "Automated product scraping, processing, and uploading system for giggly.shop",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dry-run": "node src/index.js --dry-run",
+    "test-upload": "node src/index.js --test-upload --limit 1",
+    "scrape-only": "node src/index.js --scrape-only",
+    "sync-stock": "node src/index.js --sync-stock"
+  },
+  "keywords": [
+    "ecommerce",
+    "scraper",
+    "automation",
+    "woocommerce"
+  ],
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@woocommerce/woocommerce-rest-api": "^1.0.2",
+    "axios": "^1.13.6",
+    "better-sqlite3": "^12.8.0",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.3.1",
+    "node-cron": "^4.2.1",
+    "p-limit": "^7.3.0",
+    "winston": "^3.19.0",
+    "xml2js": "^0.6.2"
+  }
+}
