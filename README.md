@@ -12,8 +12,8 @@ This system acts as an autonomous dropshipping and integration pipeline. It comp
 **Key Features:**
 - **Sitemap Monitoring:** Periodically scans source sitemaps to instantly detect newly added products.
 - **Cheerio Extraction:** Lightning-fast HTML parsing to grab high-res images, categories, variant options, pricing logic, and stock status.
-- **Deep Authentication:** Includes a WordPress session-manager cache to securely log into source sites with hidden pricing and extract the raw base cost.
-- **Intelligent Processing:** Automatically scrubs all mentions of competitor brands, replacing them with "Giggly Gadgets", and calculates precise markups based on source rules (e.g., +100 BDT markup on DropShop items).
+- **Deep Authentication:** Built to seamlessly fetch raw base prices without complex session integrations.
+- **Intelligent Processing:** Automatically scrubs all mentions of competitor brands, replacing them with "Giggly Gadgets", and standardizes source pricing configurations 1:1.
 - **SEO Preservation:** Captures WooCommerce tags, Yoast Meta Descriptions, and RankMath SEO Titles to preserve search rankings across the pipeline.
 - **WooCommerce API Sync:** Sideloads images directly through URLs to save bandwidth, creates missing tags/categories on the fly, and manages duplicate-detection seamlessly.
 
@@ -52,13 +52,30 @@ Fill out the variables in `.env`:
 - `WC_URL`: `https://giggly.shop`
 - `WC_CONSUMER_KEY`: Your generated WooCommerce API Key
 - `WC_CONSUMER_SECRET`: Your generated WooCommerce API Secret
-- `DROPSHOP_USERNAME` / `DROPSHOP_PASSWORD`: Your credentials for Dropshop.com.bd
 
 ### 4. Running the Pipeline
-You can run the pipeline in a variety of pre-configured modes depending on your testing needs:
+You can run the pipeline interactively from your terminal. When starting normally, the system will prompt you using an elegant CLI menu to select which specific website to process:
+```bash
+npm start
+```
+
+*Example Output:*
+```text
+┌──────────────────────────────────────────┐
+│  Giggly Gadgets Product Automation       │
+├──────────────────────────────────────────┤
+│  Select target website to process:       │
+│                                          │
+│  [1] Gadget House BD                     │
+│  [2] Gadget Track BD                     │
+│  [3] All Websites (Default)              │
+└──────────────────────────────────────────┘
+```
+
+You can also run the pipeline in a variety of pre-configured modes depending on your testing needs (these bypass the CLI prompt):
 
 - **Start Cron Service (Production):** `npm start`
-  *(Runs the full pipeline, then sleeps and triggers itself globally every 60 minutes)*
+  *(Runs the full pipeline based on your prompt selection, then sleeps and triggers itself globally every 30 minutes)*
 - **Dry Run (Testing):** `npm run dry-run`
   *(Checks APIs, pulls product content, modifies parameters, and logs the result without writing anything to WooCommerce)*
 - **Scrape Only:** `npm run scrape-only`
@@ -88,4 +105,5 @@ To deploy to Vercel currently, you must configure a Vercel Pipeline trigger to m
 ---
 
 ## 📦 Releases & Versioning
-- **v1.0.0** — Initial Release. Supports intelligent DropShop (+100 BDT) pricing extractions, Gadget House syncs, and native SEO/Tag translations.
+- **v1.1.0** — Replaced DropShop with Gadget Track BD to fetch exact matching pricing data. Implemented a dynamic terminal CLI menu to allow users to isolate scrapers to specific supplier domains interactively.
+- **v1.0.0** — Initial Release. Supports native SEO/Tag translations, Dropshop & Gadget House synchronization.
