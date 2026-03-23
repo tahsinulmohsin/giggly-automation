@@ -52,14 +52,18 @@ async function parseSitemap(sitemapUrl) {
 
 /**
  * Check all source sitemaps for new product URLs and add them to the queue.
+ * @param {string|null} targetSource - Specific source site to monitor, or null for all
  * @returns {Promise<{total: number, newUrls: number}>}
  */
-export async function monitorSitemaps() {
+export async function monitorSitemaps(targetSource = null) {
   log.info('Starting sitemap monitoring cycle...');
   let totalUrls = 0;
   let newUrls = 0;
 
   for (const [sourceKey, sourceConfig] of Object.entries(config.sources)) {
+    if (targetSource && targetSource !== 'all' && sourceKey !== targetSource) {
+      continue;
+    }
     log.info(`Checking sitemaps for ${sourceConfig.name}...`, {
       sitemapCount: sourceConfig.sitemaps.length,
     });

@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import readline from 'readline/promises';
 import { createModuleLogger } from './utils/logger.js';
 import { RateLimiter, sleep } from './utils/rate-limiter.js';
 import { initDatabase, getUnprocessedUrls, markUrlProcessed, upsertProduct,
@@ -28,9 +29,9 @@ const LIMIT = (() => {
 /**
  * Step 1: Monitor sitemaps for new product URLs.
  */
-async function stepMonitor() {
+async function stepMonitor(targetSource = null) {
   log.info('═══ STEP 1: Monitoring sitemaps ═══');
-  const result = await monitorSitemaps();
+  const result = await monitorSitemaps(targetSource);
   log.info(`Sitemap scan complete`, result);
   return result;
 }
@@ -38,7 +39,7 @@ async function stepMonitor() {
 /**
  * Step 2: Scrape unprocessed product URLs.
  */
-async function stepScrape(limit = 50) {
+async function stepScrape(limit = 50, targetSource = null) {
   log.info('═══ STEP 2: Scraping products ═══');
   const urls = getUnprocessedUrls(limit);
   log.info(`Found ${urls.length} unprocessed URLs`);
@@ -47,6 +48,10 @@ async function stepScrape(limit = 50) {
   let failed = 0;
 
   for (const urlRecord of urls) {
+    if (targetSource && targetSource !== 'all' && urlRecord.source_site !== targetSource) {
+      continue;
+    }
+
     await rateLimiter.wait();
 
     let product = null;
@@ -115,7 +120,7 @@ async function stepUpload(limit = 20) {
 /**
  * Step 4: Sync stock status for already-uploaded products.
  */
-async function stepSyncStock() {
+async function stepSyncStock(targetSource = null) {
   log.info('═══ STEP 4: Syncing stock status ═══');
   const uploadedProducts = getUploadedProducts();
   log.info(`Checking stock for ${uploadedProducts.length} uploaded products`);
@@ -123,6 +128,10 @@ async function stepSyncStock() {
   let updated = 0;
 
   for (const product of uploadedProducts) {
+    if (targetSource && targetSource !== 'all' && product.source_site !== targetSource) {
+      continue;
+    }
+
     await rateLimiter.wait();
 
     let currentProduct = null;
@@ -149,7 +158,7 @@ async function stepSyncStock() {
 /**
  * Run the full pipeline.
  */
-async function runPipeline() {
+async function runPipeline(targetSource = null) {
   const startTime = Date.now();
   log.info('╔══════════════════════════════════════╗');
   log.info('║  Giggly Automation Pipeline Started  ║');
@@ -159,10 +168,10 @@ async function runPipeline() {
 
   try {
     // Step 1: Monitor sitemaps
-    await stepMonitor();
+    await stepMonitor(targetSource);
 
     // Step 2: Scrape products
-    await stepScrape(LIMIT < Infinity ? LIMIT : 50);
+    await stepScrape(LIMIT < Infinity ? LIMIT : 50, targetSource);
 
     // Step 3: Upload (unless scrape-only or dry-run)
     if (!SCRAPE_ONLY && !DRY_RUN) {
@@ -177,7 +186,7 @@ async function runPipeline() {
 
     // Step 4: Sync stock (if requested)
     if (SYNC_STOCK) {
-      await stepSyncStock();
+      await stepSyncStock(targetSource);
     }
 
     // Print stats
@@ -206,21 +215,50 @@ async function main() {
   // Initialize database
   initDatabase();
 
+  let targetSource = 'all';
+
+  // Ask for target source if running interactively
+  if (!TEST_UPLOAD && !DRY_RUN && !SCRAPE_ONLY && !SYNC_STOCK && LIMIT === Infinity) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    
+    console.log('\n┌──────────────────────────────────────────┐');
+    console.log('│  Giggly Gadgets Product Automation       │');
+    console.log('├──────────────────────────────────────────┤');
+    console.log('│  Select target website to process:       │');
+    console.log('│                                          │');
+    console.log('│  [1] Gadget House BD                     │');
+    console.log('│  [2] Gadget Track BD                     │');
+    console.log('│  [3] All Websites (Default)              │');
+    console.log('└──────────────────────────────────────────┘\n');
+    
+    const answer = await rl.question('Select an option (1-3) [3]: ');
+    rl.close();
+    
+    if (answer.trim() === '1') targetSource = 'gadgetHouse';
+    else if (answer.trim() === '2') targetSource = 'gadgetTrack';
+    else targetSource = 'all';
+    
+    log.info(`Target source selected: ${targetSource === 'all' ? 'All Websites' : targetSource}`);
+  }
+
   // If a specific mode is requested, run once and exit
   if (TEST_UPLOAD || DRY_RUN || SCRAPE_ONLY || SYNC_STOCK || LIMIT < Infinity) {
-    await runPipeline();
+    await runPipeline(targetSource);
     process.exit(0);
   }
 
   // Otherwise, run immediately + schedule periodic runs
-  await runPipeline();
+  await runPipeline(targetSource);
 
   const cronInterval = `*/${config.scraping.monitorIntervalMinutes} * * * *`;
   log.info(`Scheduling next runs every ${config.scraping.monitorIntervalMinutes} minutes (${cronInterval})`);
 
   cron.schedule(cronInterval, async () => {
     log.info('⏰ Scheduled run triggered');
-    await runPipeline();
+    await runPipeline(targetSource);
   });
 
   log.info('Automation is running. Press Ctrl+C to stop.');
