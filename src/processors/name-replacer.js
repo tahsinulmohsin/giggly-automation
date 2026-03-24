@@ -3,23 +3,44 @@ import { createModuleLogger } from '../utils/logger.js';
 
 const log = createModuleLogger('name-replacer');
 
+import * as cheerio from 'cheerio';
+
 /**
  * Replace all source website names in text with "Giggly Gadgets".
- * Works on both plain text and HTML content.
+ * Works safely on HTML by isolating text nodes and preserving attributes.
  * @param {string} text
  * @returns {string}
  */
 export function replaceSourceNames(text) {
   if (!text) return text;
 
-  let result = text;
-  for (const { pattern, replacement } of config.nameReplacements) {
-    // Create a new RegExp each time to reset lastIndex for global patterns
-    const regex = new RegExp(pattern.source, pattern.flags);
-    result = result.replace(regex, replacement);
+  // Simple check to determine if text is likely HTML
+  const isHtml = /<[a-z][\s\S]*>/i.test(text);
+
+  if (!isHtml) {
+    let result = text;
+    for (const { pattern, replacement } of config.nameReplacements) {
+      const regex = new RegExp(pattern.source, pattern.flags);
+      result = result.replace(regex, replacement);
+    }
+    return result;
   }
 
-  return result;
+  const $ = cheerio.load(text, null, false); // false avoids injecting <html><body> tags
+
+  // Find all text nodes and replace values
+  $('*').contents().filter(function() {
+    return this.type === 'text';
+  }).each(function() {
+    let nodeText = $(this).text();
+    for (const { pattern, replacement } of config.nameReplacements) {
+      const regex = new RegExp(pattern.source, pattern.flags);
+      nodeText = nodeText.replace(regex, replacement);
+    }
+    this.data = nodeText;
+  });
+
+  return $.html();
 }
 
 /**

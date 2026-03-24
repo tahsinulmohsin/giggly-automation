@@ -1,6 +1,6 @@
 # Giggly Gadgets Automation Pipeline 🚀
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.2-blue.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)
 ![WooCommerce](https://img.shields.io/badge/WooCommerce-REST_API-purple.svg)
 
@@ -90,6 +90,7 @@ You can also run the pipeline in a variety of pre-configured modes depending on 
 ---
 
 ## 📦 Releases & Versioning
+- **v2.0.2 (Critical Fix)** — Resolved broken product descriptions for Executive Ample (and all Elementor-based sources) by converting greedy DOM selectors to a cascading waterfall. Rewrote the Name Replacer to use Cheerio text-node parsing, preventing `src`/`href` attribute corruption that was producing broken image links on giggly.shop. Description payload reduced from ~117K to ~8K chars.
 - **v2.0.1 (Hotfix)** — Patched a routing anomaly where the CLI interactive menu dropped `targetSource` parameters during database polling algorithms, restoring completely isolated multi-source scraper arrays.
 - **v2.0.0** — Massive scalable expansion to 8 integrated eCommerce sources utilizing a Universal Scraper architecture. Restored active DropShop credentials with precise +100 BDT markup logic. Introduced Lowest-Price Smart Merging for automated deduplication across overlapping suppliers. Hardened CSS extractors against live CommerceKit framework shifts.
 - **v1.1.0** — Replaced DropShop with Gadget Track BD to fetch exact matching pricing data. Implemented a dynamic terminal CLI menu to allow users to isolate scrapers to specific supplier domains interactively.

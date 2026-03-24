@@ -104,7 +104,12 @@ export async function scrapeDropShopProduct(url) {
     });
 
     // Description
-    const descriptionHtml = $('#tab-description, .woocommerce-Tabs-panel--description, .commercekit-Tabs-panel--description, .product-description, .entry-content').first().html() || '';
+    let descriptionHtml = $('#tab-description').first().html();
+    if (!descriptionHtml) descriptionHtml = $('.woocommerce-Tabs-panel--description').first().html();
+    if (!descriptionHtml) descriptionHtml = $('.commercekit-Tabs-panel--description').first().html();
+    if (!descriptionHtml) descriptionHtml = $('.product-description').first().html();
+    if (!descriptionHtml) descriptionHtml = $('.entry-content').first().html();
+    descriptionHtml = descriptionHtml || '';
 
     // Short description
     const shortDescription = $('.woocommerce-product-details__short-description').first().html() || '';
