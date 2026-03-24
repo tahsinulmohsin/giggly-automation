@@ -145,6 +145,47 @@ export async function uploadProduct(product, localImagePaths = []) {
   try {
     log.info(`Uploading product: ${product.title}`);
 
+    // Step 0: Smart Merge - Check for existing duplicate by slug
+    const existingProduct = await findProductBySlug(product.slug);
+    
+    // Calculate new regular and sale prices formatting correctly
+    let reqRegularPrice = '';
+    let reqSalePrice = '';
+    if (product.final_price && !product.regular_price) {
+      reqRegularPrice = String(product.final_price);
+    } else if (product.final_price && product.regular_price && !product.sale_price) {
+      reqRegularPrice = String(product.final_price);
+    } else if (product.regular_price && product.sale_price && product.regular_price > product.sale_price) {
+      reqRegularPrice = String(product.regular_price);
+      reqSalePrice = String(product.sale_price);
+    } else if (product.final_price) {
+      reqRegularPrice = String(product.final_price);
+    }
+
+    if (existingProduct) {
+      const existingPrice = parseFloat(existingProduct.price || 0);
+      const newPrice = parseFloat(reqSalePrice || reqRegularPrice || product.final_price || 0);
+
+      log.info(`Duplicate found [${product.slug}]. Current Price: ৳${existingPrice} | New Scraped Price: ৳${newPrice}`);
+
+      if (newPrice > 0 && (newPrice < existingPrice || existingPrice === 0)) {
+        log.info(`🏆 Smart Merge: New price (৳${newPrice}) is cheaper! Overwriting existing product #${existingProduct.id}...`);
+        
+        const updatePayload = {
+          regular_price: reqRegularPrice,
+          sale_price: reqSalePrice,
+          stock_status: product.stock_status || 'instock'
+        };
+        
+        await getApi().put(`products/${existingProduct.id}`, updatePayload);
+        log.info(`✓ Successfully updated existing product #${existingProduct.id} with cheaper price!`);
+        return existingProduct.id;
+      } else {
+        log.info(`🛑 Smart Merge: Existing product is cheaper or equal (৳${existingPrice}). Discarding new scrape.`);
+        return existingProduct.id; // Return ID so SQLite marks it 'uploaded' and ignores it
+      }
+    }
+
     // Prepare images — use source URLs directly (WooCommerce downloads them)
     const images = [];
     const productImages = typeof product.images === 'string'
@@ -211,22 +252,8 @@ export async function uploadProduct(product, localImagePaths = []) {
       meta_data: metaData,
     };
 
-    // If there's only a final price (no original/sale distinction), just use regular_price
-    if (product.final_price && !product.regular_price) {
-      payload.regular_price = String(product.final_price);
-    }
-    if (product.final_price && product.regular_price && !product.sale_price) {
-      payload.regular_price = String(product.final_price);
-    }
-
-    // For products with a sale: regular = higher price, sale = lower price
-    if (product.regular_price && product.sale_price && product.regular_price > product.sale_price) {
-      payload.regular_price = String(product.regular_price);
-      payload.sale_price = String(product.sale_price);
-    } else if (product.final_price) {
-      payload.regular_price = String(product.final_price);
-      payload.sale_price = '';
-    }
+    if (reqRegularPrice) payload.regular_price = reqRegularPrice;
+    if (reqSalePrice) payload.sale_price = reqSalePrice;
 
     const { data: wcProduct } = await getApi().post('products', payload);
 
@@ -274,7 +301,7 @@ export async function updateProductStock(wcProductId, stockStatus) {
 export async function findProductBySlug(slug) {
   try {
     const { data } = await getApi().get('products', { slug, per_page: 1 });
-    return data.length > 0 ? data[0].id : null;
+    return data.length > 0 ? data[0] : null;
   } catch (error) {
     log.error(`Failed to search for product slug: ${slug}`, { error: error.message });
     return null;
