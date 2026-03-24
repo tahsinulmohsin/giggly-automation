@@ -85,7 +85,12 @@ export function addSitemapUrl(url, sourceSite) {
   return stmt.run(url, sourceSite);
 }
 
-export function getUnprocessedUrls(limit = 50) {
+export function getUnprocessedUrls(limit = 50, targetSource = null) {
+  if (targetSource && targetSource !== 'all') {
+    return getDb().prepare(
+      'SELECT * FROM sitemap_urls WHERE processed = 0 AND source_site = ? ORDER BY discovered_at ASC LIMIT ?'
+    ).all(targetSource, limit);
+  }
   return getDb().prepare(
     'SELECT * FROM sitemap_urls WHERE processed = 0 ORDER BY discovered_at ASC LIMIT ?'
   ).all(limit);
@@ -150,7 +155,12 @@ export function upsertProduct(product) {
   }
 }
 
-export function getProductsToUpload(limit = 20) {
+export function getProductsToUpload(limit = 20, targetSource = null) {
+  if (targetSource && targetSource !== 'all') {
+    return getDb().prepare(
+      "SELECT * FROM products WHERE status = 'scraped' AND source_site = ? ORDER BY scraped_at ASC LIMIT ?"
+    ).all(targetSource, limit);
+  }
   return getDb().prepare(
     "SELECT * FROM products WHERE status = 'scraped' ORDER BY scraped_at ASC LIMIT ?"
   ).all(limit);

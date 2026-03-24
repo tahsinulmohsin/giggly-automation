@@ -69,7 +69,7 @@ const config = {
       name: 'Famous Gadget',
       baseUrl: 'https://www.famousgadget.com.bd',
       sitemaps: [
-        'https://www.famousgadget.com.bd/product-sitemap.xml',
+        'https://www.famousgadget.com.bd/sitemap.xml',
       ],
       priceMarkup: 0,
     },
