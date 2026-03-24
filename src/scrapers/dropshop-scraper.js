@@ -108,7 +108,6 @@ export async function scrapeDropShopProduct(url) {
     if (!descriptionHtml) descriptionHtml = $('.woocommerce-Tabs-panel--description').first().html();
     if (!descriptionHtml) descriptionHtml = $('.commercekit-Tabs-panel--description').first().html();
     if (!descriptionHtml) descriptionHtml = $('.product-description').first().html();
-    if (!descriptionHtml) descriptionHtml = $('.entry-content').first().html();
     descriptionHtml = descriptionHtml || '';
 
     // Short description

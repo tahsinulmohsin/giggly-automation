@@ -82,14 +82,6 @@ const config = {
       ],
       priceMarkup: 0,
     },
-    rootGear: {
-      name: 'RootGear BD',
-      baseUrl: 'https://rootgearbd.com',
-      sitemaps: [
-        'https://rootgearbd.com/product-sitemap.xml',
-      ],
-      priceMarkup: 0,
-    },
   },
 
   // Scraping settings
@@ -129,10 +121,6 @@ const config = {
     { pattern: /dropshop\.com\.bd/gi, replacement: 'Giggly Gadgets' },
     { pattern: /dropshop/gi, replacement: 'Giggly Gadgets' },
     { pattern: /drop\s*shop/gi, replacement: 'Giggly Gadgets' },
-    { pattern: /rootgearbd\.com/gi, replacement: 'Giggly Gadgets' },
-    { pattern: /rootgearbd/gi, replacement: 'Giggly Gadgets' },
-    { pattern: /root\s*gear\s*bd/gi, replacement: 'Giggly Gadgets' },
-    { pattern: /root\s*gear/gi, replacement: 'Giggly Gadgets' },
   ],
 
   // Logging
