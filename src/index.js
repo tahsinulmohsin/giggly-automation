@@ -7,6 +7,7 @@ import { initDatabase, getUnprocessedUrls, markUrlProcessed, upsertProduct,
   getUploadedProducts, updateStockStatus, getStats } from './db/database.js';
 import { monitorSitemaps } from './scrapers/sitemap-monitor.js';
 import { scrapeGadgetHouseProduct } from './scrapers/gadgethouse-scraper.js';
+import { scrapeDropShopProduct } from './scrapers/dropshop-scraper.js';
 import { scrapeGadgetTrackProduct } from './scrapers/gadgettrack-scraper.js';
 import { scrapeWooCommerceProduct } from './scrapers/woocommerce-scraper.js';
 import { processProduct } from './processors/name-replacer.js';
@@ -59,6 +60,8 @@ async function stepScrape(limit = 50, targetSource = null) {
 
     if (urlRecord.source_site === 'gadgetHouse') {
       product = await scrapeGadgetHouseProduct(urlRecord.url);
+    } else if (urlRecord.source_site === 'dropShop') {
+      product = await scrapeDropShopProduct(urlRecord.url);
     } else if (urlRecord.source_site === 'gadgetTrack') {
       product = await scrapeGadgetTrackProduct(urlRecord.url);
     } else {
@@ -140,6 +143,8 @@ async function stepSyncStock(targetSource = null) {
     let currentProduct = null;
     if (product.source_site === 'gadgetHouse') {
       currentProduct = await scrapeGadgetHouseProduct(product.source_url);
+    } else if (product.source_site === 'dropShop') {
+      currentProduct = await scrapeDropShopProduct(product.source_url);
     } else if (product.source_site === 'gadgetTrack') {
       currentProduct = await scrapeGadgetTrackProduct(product.source_url);
     } else {
@@ -235,26 +240,28 @@ async function main() {
     console.log('│  Select target website to process:       │');
     console.log('│                                          │');
     console.log('│  [1] Gadget House BD                     │');
-    console.log('│  [2] Gadget Track BD                     │');
-    console.log('│  [3] Executive Ample                     │');
-    console.log('│  [4] Gadget Breeze                       │');
-    console.log('│  [5] Accessories Vandar                  │');
-    console.log('│  [6] GadgetZ                             │');
-    console.log('│  [7] Famous Gadget                       │');
-    console.log('│  [8] All Websites (Default)              │');
+    console.log('│  [2] DropShop                            │');
+    console.log('│  [3] Gadget Track BD                     │');
+    console.log('│  [4] Executive Ample                     │');
+    console.log('│  [5] Gadget Breeze                       │');
+    console.log('│  [6] Accessories Vandar                  │');
+    console.log('│  [7] GadgetZ                             │');
+    console.log('│  [8] Famous Gadget                       │');
+    console.log('│  [9] All Websites (Default)              │');
     console.log('└──────────────────────────────────────────┘\n');
     
-    const answer = await rl.question('Select an option (1-8) [8]: ');
+    const answer = await rl.question('Select an option (1-9) [9]: ');
     rl.close();
     
     switch(answer.trim()) {
       case '1': targetSource = 'gadgetHouse'; break;
-      case '2': targetSource = 'gadgetTrack'; break;
-      case '3': targetSource = 'executiveAmple'; break;
-      case '4': targetSource = 'gadgetBreeze'; break;
-      case '5': targetSource = 'accessoriesVandar'; break;
-      case '6': targetSource = 'gadgetZ'; break;
-      case '7': targetSource = 'famousGadget'; break;
+      case '2': targetSource = 'dropShop'; break;
+      case '3': targetSource = 'gadgetTrack'; break;
+      case '4': targetSource = 'executiveAmple'; break;
+      case '5': targetSource = 'gadgetBreeze'; break;
+      case '6': targetSource = 'accessoriesVandar'; break;
+      case '7': targetSource = 'gadgetZ'; break;
+      case '8': targetSource = 'famousGadget'; break;
       default: targetSource = 'all';
     }
     

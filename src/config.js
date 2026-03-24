@@ -25,6 +25,15 @@ const config = {
       ],
       priceMarkup: 0, // Use same price
     },
+    dropShop: {
+      name: 'DropShop',
+      baseUrl: 'https://dropshop.com.bd',
+      sitemaps: [
+        'https://dropshop.com.bd/wp-sitemap-posts-product-1.xml',
+        'https://dropshop.com.bd/wp-sitemap-posts-product-2.xml',
+      ],
+      priceMarkup: 100, // Add BDT 100 to Suggested Price
+    },
     gadgetTrack: {
       name: 'Gadget Track BD',
       baseUrl: 'https://www.gadgettrackbd.com',
@@ -109,6 +118,9 @@ const config = {
     { pattern: /famous\s*gadget/gi, replacement: 'Giggly Gadgets' },
     { pattern: /famousgadget\.com\.bd/gi, replacement: 'Giggly Gadgets' },
     { pattern: /famousgadget/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /dropshop\.com\.bd/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /dropshop/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /drop\s*shop/gi, replacement: 'Giggly Gadgets' },
   ],
 
   // Logging
