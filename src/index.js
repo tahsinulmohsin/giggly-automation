@@ -8,6 +8,7 @@ import { initDatabase, getUnprocessedUrls, markUrlProcessed, upsertProduct,
 import { monitorSitemaps } from './scrapers/sitemap-monitor.js';
 import { scrapeGadgetHouseProduct } from './scrapers/gadgethouse-scraper.js';
 import { scrapeGadgetTrackProduct } from './scrapers/gadgettrack-scraper.js';
+import { scrapeWooCommerceProduct } from './scrapers/woocommerce-scraper.js';
 import { processProduct } from './processors/name-replacer.js';
 import { uploadProduct, updateProductStock } from './uploaders/woo-uploader.js';
 import config from './config.js';
@@ -60,6 +61,8 @@ async function stepScrape(limit = 50, targetSource = null) {
       product = await scrapeGadgetHouseProduct(urlRecord.url);
     } else if (urlRecord.source_site === 'gadgetTrack') {
       product = await scrapeGadgetTrackProduct(urlRecord.url);
+    } else {
+      product = await scrapeWooCommerceProduct(urlRecord.url, urlRecord.source_site);
     }
 
     if (product) {
@@ -139,6 +142,8 @@ async function stepSyncStock(targetSource = null) {
       currentProduct = await scrapeGadgetHouseProduct(product.source_url);
     } else if (product.source_site === 'gadgetTrack') {
       currentProduct = await scrapeGadgetTrackProduct(product.source_url);
+    } else {
+      currentProduct = await scrapeWooCommerceProduct(product.source_url, product.source_site);
     }
 
     if (currentProduct && currentProduct.stock_status !== product.stock_status) {
@@ -231,15 +236,27 @@ async function main() {
     console.log('│                                          │');
     console.log('│  [1] Gadget House BD                     │');
     console.log('│  [2] Gadget Track BD                     │');
-    console.log('│  [3] All Websites (Default)              │');
+    console.log('│  [3] Executive Ample                     │');
+    console.log('│  [4] Gadget Breeze                       │');
+    console.log('│  [5] Accessories Vandar                  │');
+    console.log('│  [6] GadgetZ                             │');
+    console.log('│  [7] Famous Gadget                       │');
+    console.log('│  [8] All Websites (Default)              │');
     console.log('└──────────────────────────────────────────┘\n');
     
-    const answer = await rl.question('Select an option (1-3) [3]: ');
+    const answer = await rl.question('Select an option (1-8) [8]: ');
     rl.close();
     
-    if (answer.trim() === '1') targetSource = 'gadgetHouse';
-    else if (answer.trim() === '2') targetSource = 'gadgetTrack';
-    else targetSource = 'all';
+    switch(answer.trim()) {
+      case '1': targetSource = 'gadgetHouse'; break;
+      case '2': targetSource = 'gadgetTrack'; break;
+      case '3': targetSource = 'executiveAmple'; break;
+      case '4': targetSource = 'gadgetBreeze'; break;
+      case '5': targetSource = 'accessoriesVandar'; break;
+      case '6': targetSource = 'gadgetZ'; break;
+      case '7': targetSource = 'famousGadget'; break;
+      default: targetSource = 'all';
+    }
     
     log.info(`Target source selected: ${targetSource === 'all' ? 'All Websites' : targetSource}`);
   }

@@ -31,7 +31,47 @@ const config = {
       sitemaps: [
         'https://www.gadgettrackbd.com/product-sitemap.xml',
       ],
-      priceMarkup: 0, // Same price
+      priceMarkup: 0, // Use same price
+    },
+    executiveAmple: {
+      name: 'Executive Ample',
+      baseUrl: 'https://executiveample.com',
+      sitemaps: [
+        'https://executiveample.com/product-sitemap.xml',
+      ],
+      priceMarkup: 0,
+    },
+    gadgetBreeze: {
+      name: 'Gadget Breeze',
+      baseUrl: 'https://gadgetbreeze.com.bd',
+      sitemaps: [
+        'https://gadgetbreeze.com.bd/product-sitemap.xml',
+      ],
+      priceMarkup: 0,
+    },
+    accessoriesVandar: {
+      name: 'Accessories Vandar',
+      baseUrl: 'https://accessoriesvandar.com',
+      sitemaps: [
+        'https://accessoriesvandar.com/product-sitemap.xml',
+      ],
+      priceMarkup: 0,
+    },
+    gadgetZ: {
+      name: 'GadgetZ',
+      baseUrl: 'https://gadgetz.com.bd',
+      sitemaps: [
+        'https://gadgetz.com.bd/product-sitemap.xml',
+      ],
+      priceMarkup: 0,
+    },
+    famousGadget: {
+      name: 'Famous Gadget',
+      baseUrl: 'https://www.famousgadget.com.bd',
+      sitemaps: [
+        'https://www.famousgadget.com.bd/product-sitemap.xml',
+      ],
+      priceMarkup: 0,
     },
   },
 
@@ -55,6 +95,20 @@ const config = {
     { pattern: /gadgettrackbd/gi, replacement: 'Giggly Gadgets' },
     { pattern: /gadgettrack/gi, replacement: 'Giggly Gadgets' },
     { pattern: /gadget\s*track/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /executive\s*ample/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /executiveample\.com/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /executiveample/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /gadget\s*breeze/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /gadgetbreeze\.com\.bd/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /gadgetbreeze/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /accessories\s*vandar/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /accessoriesvandar\.com/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /accessoriesvandar/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /gadgetz\.com\.bd/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /gadgetz/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /famous\s*gadget/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /famousgadget\.com\.bd/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /famousgadget/gi, replacement: 'Giggly Gadgets' },
   ],
 
   // Logging
