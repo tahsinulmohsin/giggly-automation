@@ -90,6 +90,7 @@ You can also run the pipeline in a variety of pre-configured modes depending on 
 ---
 
 ## 📦 Releases & Versioning
+- **v2.0.1 (Hotfix)** — Patched a routing anomaly where the CLI interactive menu dropped `targetSource` parameters during database polling algorithms, restoring completely isolated multi-source scraper arrays.
 - **v2.0.0** — Massive scalable expansion to 8 integrated eCommerce sources utilizing a Universal Scraper architecture. Restored active DropShop credentials with precise +100 BDT markup logic. Introduced Lowest-Price Smart Merging for automated deduplication across overlapping suppliers. Hardened CSS extractors against live CommerceKit framework shifts.
 - **v1.1.0** — Replaced DropShop with Gadget Track BD to fetch exact matching pricing data. Implemented a dynamic terminal CLI menu to allow users to isolate scrapers to specific supplier domains interactively.
 - **v1.0.0** — Initial Release. Supports native SEO/Tag translations, Dropshop & Gadget House synchronization.
