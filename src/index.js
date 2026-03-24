@@ -43,8 +43,8 @@ async function stepMonitor(targetSource = null) {
  */
 async function stepScrape(limit = 50, targetSource = null) {
   log.info('═══ STEP 2: Scraping products ═══');
-  const urls = getUnprocessedUrls(limit);
-  log.info(`Found ${urls.length} unprocessed URLs`);
+  const urls = getUnprocessedUrls(limit, targetSource);
+  log.info(`Found ${urls.length} unprocessed URLs for target: ${targetSource || 'all'}`);
 
   let scraped = 0;
   let failed = 0;
@@ -89,10 +89,10 @@ async function stepScrape(limit = 50, targetSource = null) {
 /**
  * Step 3: Upload scraped products to giggly.shop.
  */
-async function stepUpload(limit = 20) {
+async function stepUpload(limit = 20, targetSource = null) {
   log.info('═══ STEP 3: Uploading products ═══');
-  const products = getProductsToUpload(limit);
-  log.info(`Found ${products.length} products to upload`);
+  const products = getProductsToUpload(limit, targetSource);
+  log.info(`Found ${products.length} products to upload for target: ${targetSource || 'all'}`);
 
   let uploaded = 0;
   let errors = 0;
@@ -185,10 +185,10 @@ async function runPipeline(targetSource = null) {
 
     // Step 3: Upload (unless scrape-only or dry-run)
     if (!SCRAPE_ONLY && !DRY_RUN) {
-      await stepUpload(LIMIT < Infinity ? LIMIT : 20);
+      await stepUpload(LIMIT < Infinity ? LIMIT : 20, targetSource);
     } else if (DRY_RUN) {
-      const toUpload = getProductsToUpload(LIMIT < Infinity ? LIMIT : 20);
-      log.info(`[DRY RUN] Would upload ${toUpload.length} products`);
+      const toUpload = getProductsToUpload(LIMIT < Infinity ? LIMIT : 20, targetSource);
+      log.info(`[DRY RUN] Would upload ${toUpload.length} products for target: ${targetSource || 'all'}`);
       for (const p of toUpload) {
         log.info(`  → ${p.title} | ৳${p.final_price} | ${p.source_site}`);
       }
