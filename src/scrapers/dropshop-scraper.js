@@ -82,7 +82,7 @@ export async function scrapeDropShopProduct(url) {
 
     // Images
     const images = [];
-    $('div.woocommerce-product-gallery__image img, .product-images img, .woocommerce-product-gallery img').each((_, el) => {
+    $('.woocommerce-product-gallery__image img, .product-images img, .woocommerce-product-gallery img, .cg-psp-gallery img').each((_, el) => {
       const src = $(el).attr('data-large_image') || $(el).attr('data-src') || $(el).attr('src');
       if (src && !src.includes('placeholder') && !images.includes(src)) {
         const fullSrc = src.replace(/-\d+x\d+\./, '.');
