@@ -1,6 +1,6 @@
 # Giggly Gadgets Automation Pipeline 🚀
 
-![Version](https://img.shields.io/badge/version-2.0.4-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.6-blue.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)
 ![WooCommerce](https://img.shields.io/badge/WooCommerce-REST_API-purple.svg)
 
@@ -90,6 +90,8 @@ You can also run the pipeline in a variety of pre-configured modes depending on 
 ---
 
 ## 📦 Releases & Versioning
+- **v2.0.6 (CDATA Link Corruption Fix)** — Fixed a critical vulnerability where Cheerio mathematically misclassified the inner DOM of `<noscript>`, `<style>`, and `<script>` elements as raw C-Data block text nodes, exposing origin attributes to dangerous global name-scrubbing regex engines that generated corrupted `giggly gadgets` URLs. Added extraction routines to systematically delete `<noscript>` artifacts entirely, preventing lazy-load duplicates and fortifying HTML security.
+- **v2.0.5 (Hotlink Media Sideload Engine)** — Decoupled the pipeline's image requirements from origin servers to enforce local storage autonomy. Constructed a revolutionary bypass algorithm that temporarily mounts a `Draft` WooCommerce Proxy Product, feeds it the scraped HTML origin graphic URLs, hijacks the WooCommerce media library's download protocols securely without native WP Admin permissions, shreds the proxy, and natively remaps the `giggly.shop` output URLs back into the active description array in real-time.
 - **v2.0.4 (Image Sanitizer Patch)** — Implemented a universal `cleanDescriptionHtml` sanitizer to permanently eliminate broken images caused by LiteSpeed and WP-Rocket lazy-loading plugins (e.g., Gadget Breeze). The extraction engine now systematically reconstructs actual URLs hidden inside `data-lazy-src` nodes and rewrites relative web paths to absolute source hostnames, destroying the blank `data:image/svg+xml` placeholders that caused Giggly Shop hotlink failures.
 - **v2.0.3 (Critical Structural Patch)** — Permanently removed the greedy `.entry-content` CSS fallback from all 4 Universal Scraper engines. If a product natively lacked a description tab, the scraper incorrectly dumped the entire Elementor webpage body (often 100KB+ of layout code) into the WooCommerce API. The pipeline now correctly returns an empty description to rely on the short-description field instead.
 - **v2.0.2 (Critical Fix)** — Resolved broken product descriptions for Executive Ample (and all Elementor-based sources) by converting greedy DOM selectors to a cascading waterfall. Rewrote the Name Replacer to use Cheerio text-node parsing, preventing `src`/`href` attribute corruption that was producing broken image links on giggly.shop. Description payload reduced from ~117K to ~8K chars.
