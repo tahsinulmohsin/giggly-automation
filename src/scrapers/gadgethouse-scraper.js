@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { createModuleLogger } from '../utils/logger.js';
-import { fetchWithRetry, parsePrice, slugify } from '../utils/helpers.js';
+import { fetchWithRetry, parsePrice, slugify, cleanDescriptionHtml } from '../utils/helpers.js';
+import config from '../config.js';
 
 const log = createModuleLogger('gadgethouse-scraper');
 
@@ -73,6 +74,7 @@ export async function scrapeGadgetHouseProduct(url) {
     if (!descriptionHtml) descriptionHtml = $('.commercekit-Tabs-panel--description').first().html();
     if (!descriptionHtml) descriptionHtml = $('.product-description').first().html();
     descriptionHtml = descriptionHtml || '';
+    descriptionHtml = cleanDescriptionHtml(descriptionHtml, url);
 
     // Short description
     const shortDescription = $('.woocommerce-product-details__short-description').first().html() || '';

@@ -68,3 +68,66 @@ export function slugify(title) {
     .replace(/^-|-$/g, '')
     .slice(0, 200);
 }
+
+import * as cheerio from 'cheerio';
+
+/**
+ * Reverses WordPress lazy-loading obfuscation by moving real URLs from data attributes back into the native `src` tag.
+ * Resolves all relative URLs into absolute URLs linking to the original source.
+ * @param {string} html The raw HTML description
+ * @param {string} baseUrl The base URL of the source website (e.g. 'https://gadgetbreeze.com.bd')
+ * @returns {string} Sanitized HTML
+ */
+export function cleanDescriptionHtml(html, baseUrl) {
+  if (!html) return html;
+  
+  const $ = cheerio.load(html, null, false);
+  
+  // Clean images
+  $('img').each(function() {
+    const $img = $(this);
+    
+    // Look for lazy-load data attributes
+    const realSrc = $img.attr('data-src') || $img.attr('data-lazy-src') || $img.attr('data-woodmart-src');
+    if (realSrc) {
+      $img.attr('src', realSrc);
+    }
+    
+    const realSrcset = $img.attr('data-srcset') || $img.attr('data-lazy-srcset');
+    if (realSrcset) {
+      $img.attr('srcset', realSrcset);
+    }
+    
+    // Clean up to prevent conflicts
+    $img.removeAttr('data-src');
+    $img.removeAttr('data-lazy-src');
+    $img.removeAttr('data-woodmart-src');
+    $img.removeAttr('data-srcset');
+    $img.removeAttr('data-lazy-srcset');
+    
+    // Some lazy-loaders inject their own placeholder classes
+    $img.removeClass('lazyload lazyloaded wp-image-lazy');
+
+    // Make src absolute
+    const src = $img.attr('src');
+    if (src && baseUrl) {
+      try {
+        $img.attr('src', new URL(src, baseUrl).href);
+      } catch (e) {}
+    }
+  });
+
+  // Make all links absolute to prevent 404s on the target site
+  if (baseUrl) {
+    $('a').each(function() {
+      const href = $(this).attr('href');
+      if (href) {
+        try {
+          $(this).attr('href', new URL(href, baseUrl).href);
+        } catch (e) {}
+      }
+    });
+  }
+  
+  return $.html();
+}
