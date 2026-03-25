@@ -135,6 +135,85 @@ async function findOrCreateTag(tagName) {
   }
 }
 
+import * as cheerio from 'cheerio';
+
+/**
+ * Offlines all external images embedded in the description HTML by uploading them 
+ * to the WooCommerce media library via a temporary dummy product.
+ * @param {string} html 
+ * @param {string} slug 
+ * @returns {Promise<string>} Updated HTML with local giggly.shop image URLs
+ */
+async function sideloadDescriptionImages(html, slug) {
+  if (!html) return html;
+  const $ = cheerio.load(html, null, false);
+  const externalImages = [];
+  const gigglyHost = new URL(config.wc.url).hostname;
+  
+  $('img').each((i, el) => {
+    let src = $(el).attr('src');
+    if (!src) return;
+    try {
+      const srcUrl = new URL(src);
+      if (srcUrl.hostname !== gigglyHost) {
+         if (!externalImages.includes(src)) {
+           externalImages.push(src);
+         }
+      }
+    } catch(e) {}
+  });
+
+  if (externalImages.length === 0) {
+    return html;
+  }
+
+  log.info(`Found ${externalImages.length} external inline description images. Sideloading via API proxy...`);
+  
+  try {
+    const payload = {
+      name: `SideloadProxy_${slug}`,
+      type: 'simple',
+      status: 'draft',
+      images: externalImages.map(src => ({ src }))
+    };
+    
+    // Create dummy product
+    const { data: proxyProduct } = await getApi().post('products', payload);
+    const downloadedImages = proxyProduct.images || [];
+    
+    // Immediately delete dummy product
+    await getApi().delete(`products/${proxyProduct.id}`, { force: true });
+    
+    // Build map of Old URL -> New Local URL
+    const urlMap = {};
+    for (let i = 0; i < downloadedImages.length; i++) {
+        // WooCommerce preserves the order of images
+        if (externalImages[i]) {
+            urlMap[externalImages[i]] = downloadedImages[i].src;
+        }
+    }
+
+    // Rewrite HTML
+    $('img').each((i, el) => {
+      let src = $(el).attr('src');
+      if (src && urlMap[src]) {
+        $(el).attr('src', urlMap[src]);
+        
+        // Clear conflicting responsive srcset attributes from the source
+        $(el).removeAttr('srcset');
+        $(el).removeAttr('sizes');
+      }
+    });
+
+    log.info(`Successfully sideloaded inline description images for ${slug}`);
+    return $.html();
+
+  } catch(error) {
+    log.error(`Failed to sideload description images: ${slug}`, { error: error.message });
+    return html; // Fallback to original hotlinked HTML on failure
+  }
+}
+
 /**
  * Upload a processed product to giggly.shop via WooCommerce REST API.
  * @param {object} product - Processed product data
@@ -234,13 +313,17 @@ export async function uploadProduct(product, localImagePaths = []) {
       metaData.push({ key: 'rank_math_title', value: product.meta_title });
     }
 
+    // Sideload any external images located in the HTML description
+    const sanitizedDescription = await sideloadDescriptionImages(product.description || '', product.slug);
+
     // Build product payload
     const payload = {
       name: product.title,
       slug: product.slug,
       type: 'simple',
       status: 'publish',
-      description: product.description || '',
+      description: sanitizedDescription,
+
       short_description: product.short_description || '',
       regular_price: product.regular_price ? String(product.regular_price) : '',
       sale_price: product.sale_price ? String(product.sale_price) : '',
