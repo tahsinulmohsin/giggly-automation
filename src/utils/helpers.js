@@ -83,6 +83,10 @@ export function cleanDescriptionHtml(html, baseUrl) {
   
   const $ = cheerio.load(html, null, false);
   
+  // Remove all <noscript> tags entirely because they hide raw HTML from Cheerio 
+  // and frequently duplicate lazy-loaded images, causing regex leakage.
+  $('noscript').remove();
+
   // Clean images
   $('img').each(function() {
     const $img = $(this);

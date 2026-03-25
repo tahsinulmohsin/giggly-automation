@@ -32,6 +32,11 @@ export function replaceSourceNames(text) {
   $('*').contents().filter(function() {
     return this.type === 'text';
   }).each(function() {
+    const parentTag = $(this).parent().get(0)?.tagName?.toLowerCase();
+    if (parentTag === 'script' || parentTag === 'style' || parentTag === 'noscript') {
+      return; // Skip these raw data tags safely
+    }
+
     let nodeText = $(this).text();
     for (const { pattern, replacement } of config.nameReplacements) {
       const regex = new RegExp(pattern.source, pattern.flags);
