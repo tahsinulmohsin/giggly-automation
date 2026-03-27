@@ -272,10 +272,12 @@ export async function uploadProduct(product, localImagePaths = []) {
       : product.images || [];
 
     for (const imgUrl of productImages) {
-      images.push({
-        src: imgUrl,
-        alt: product.title,
-      });
+      if (typeof imgUrl === 'string' && imgUrl.startsWith('http')) {
+        images.push({
+          src: imgUrl,
+          alt: product.title,
+        });
+      }
     }
 
     // Prepare categories

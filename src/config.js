@@ -30,7 +30,6 @@ const config = {
       baseUrl: 'https://dropshop.com.bd',
       sitemaps: [
         'https://dropshop.com.bd/wp-sitemap-posts-product-1.xml',
-        'https://dropshop.com.bd/wp-sitemap-posts-product-2.xml',
       ],
       priceMarkup: 100, // Add BDT 100 to Suggested Price
     },
@@ -89,7 +88,7 @@ const config = {
     monitorIntervalMinutes: parseInt(process.env.MONITOR_INTERVAL_MINUTES || '30', 10),
     scrapeDelayMs: parseInt(process.env.SCRAPE_DELAY_MS || '2000', 10),
     maxImageConcurrency: parseInt(process.env.MAX_IMAGE_CONCURRENCY || '3', 10),
-    requestTimeout: 15000,
+    requestTimeout: 30000,
     maxRetries: 3,
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   },
