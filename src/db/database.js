@@ -109,6 +109,32 @@ export function isUrlKnown(url) {
   return !!row;
 }
 
+/**
+ * Reset orphaned URLs — URLs marked as processed but with no corresponding
+ * product in the products table (e.g. because the product was deleted).
+ * This prevents the recurring "0 unprocessed URLs" cache lock issue.
+ * @param {string|null} targetSource - Specific source to reset, or null for all
+ * @returns {number} Number of URLs reset
+ */
+export function resetOrphanedUrls(targetSource = null) {
+  let stmt;
+  if (targetSource && targetSource !== 'all') {
+    stmt = getDb().prepare(`
+      UPDATE sitemap_urls SET processed = 0
+      WHERE processed = 1
+        AND source_site = ?
+        AND url NOT IN (SELECT source_url FROM products)
+    `);
+    return stmt.run(targetSource).changes;
+  }
+  stmt = getDb().prepare(`
+    UPDATE sitemap_urls SET processed = 0
+    WHERE processed = 1
+      AND url NOT IN (SELECT source_url FROM products)
+  `);
+  return stmt.run().changes;
+}
+
 // ── Product operations ──
 
 export function upsertProduct(product) {

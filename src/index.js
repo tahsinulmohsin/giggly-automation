@@ -4,7 +4,7 @@ import { createModuleLogger } from './utils/logger.js';
 import { RateLimiter, sleep } from './utils/rate-limiter.js';
 import { initDatabase, getUnprocessedUrls, markUrlProcessed, upsertProduct,
   getProductsToUpload, markProductUploaded, markProductError,
-  getUploadedProducts, updateStockStatus, getStats } from './db/database.js';
+  getUploadedProducts, updateStockStatus, getStats, resetOrphanedUrls } from './db/database.js';
 import { monitorSitemaps } from './scrapers/sitemap-monitor.js';
 import { scrapeGadgetHouseProduct } from './scrapers/gadgethouse-scraper.js';
 import { scrapeDropShopProduct } from './scrapers/dropshop-scraper.js';
@@ -33,6 +33,13 @@ const LIMIT = (() => {
  */
 async function stepMonitor(targetSource = null) {
   log.info('═══ STEP 1: Monitoring sitemaps ═══');
+
+  // Auto-reset orphaned URLs (processed but product was deleted)
+  const orphansReset = resetOrphanedUrls(targetSource);
+  if (orphansReset > 0) {
+    log.info(`♻️ Auto-recovered ${orphansReset} orphaned URLs back into the scrape queue`);
+  }
+
   const result = await monitorSitemaps(targetSource);
   log.info(`Sitemap scan complete`, result);
   return result;
