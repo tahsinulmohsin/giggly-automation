@@ -1,6 +1,6 @@
 # Giggly Gadgets Automation Pipeline 🚀
 
-![Version](https://img.shields.io/badge/version-2.0.8-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.9-blue.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)
 ![WooCommerce](https://img.shields.io/badge/WooCommerce-REST_API-purple.svg)
 
@@ -90,6 +90,7 @@ You can also run the pipeline in a variety of pre-configured modes depending on 
 ---
 
 ## 📦 Releases & Versioning
+- **v2.0.9 (DropShop Full Catalog Crawler)** — WordPress default sitemaps cap at 2,000 URLs per page. DropShop has ~3,847 products, leaving ~1,847 completely invisible to the scraper. Built a paginated `/shop/` page crawler that walks all 128+ shop pages to discover every product URL. Automatically runs after the normal sitemap scan when DropShop is targeted. First run discovered and queued 1,847 new products.
 - **v2.0.8 (Self-Healing Scraper Queue)** — Permanently eliminated the recurring "0 unprocessed URLs" cache lock by implementing automatic orphan detection. The pipeline now self-heals on every cycle by detecting sitemap URLs marked as processed but with no corresponding product record, and automatically re-queues them.
 - **v2.0.7 (Uploader Stability Patch)** — Fortified the WooCommerce uploader payload generator against `400 Bad Request` crashes caused by malformed/empty image URLs from source websites. Added strict `http` prefix validation on all image arrays. Doubled the HTTP request timeout from 15s to 30s to prevent Executive Ample sitemap timeouts. Removed deprecated DropShop sitemap page 2.
 - **v2.0.6 (CDATA Link Corruption Fix)** — Fixed a critical vulnerability where Cheerio misclassified the inner DOM of `<noscript>`, `<style>`, and `<script>` elements as raw text nodes, exposing origin attributes to the name-scrubbing regex and generating corrupted `giggly gadgets` URLs. Added routines to delete `<noscript>` artifacts entirely, preventing lazy-load duplicates.
