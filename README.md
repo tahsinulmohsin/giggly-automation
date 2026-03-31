@@ -85,7 +85,18 @@ You can also run the pipeline in a variety of pre-configured modes depending on 
 - **Dry Run (Testing):** `npm run dry-run`
 - **Scrape Only:** `npm run scrape-only`
 - **Test Single Upload:** `npm run test-upload`
-- **Sync Stock Constraints:** `npm run sync-stock`
+- **Sync Stock:** `npm run sync-stock`
+
+### 🔄 Stock Synchronization
+
+Run `npm run sync-stock` to automatically check the stock status of **every uploaded product** against its original source website. The system will:
+
+1. Pull up all products in the database that have been uploaded to giggly.shop
+2. Visit each product's original supplier URL (DropShop, Gadget Breeze, Gadget House, etc.)
+3. Check whether the product is currently **In Stock** or **Out of Stock** on the supplier's site
+4. If the status has changed, update the giggly.shop product via the WooCommerce REST API
+
+> **Note:** With ~3,000+ uploaded products, this process can take **1.5–2 hours** depending on your `SCRAPE_DELAY_MS` setting (default: 2 seconds per product). You can lower the delay in your `.env` file to speed it up, but be cautious of rate limiting from supplier websites.
 
 ---
 
