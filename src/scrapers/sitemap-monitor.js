@@ -1,4 +1,6 @@
 import { parseStringPromise } from 'xml2js';
+import * as cheerio from 'cheerio';
+import axios from 'axios';
 import { createModuleLogger } from '../utils/logger.js';
 import { fetchWithRetry } from '../utils/helpers.js';
 import { RateLimiter } from '../utils/rate-limiter.js';
@@ -7,6 +9,77 @@ import config from '../config.js';
 
 const log = createModuleLogger('sitemap-monitor');
 const rateLimiter = new RateLimiter(1000);
+
+/**
+ * Crawl DropShop's paginated /shop/ pages to discover product URLs
+ * beyond the 2,000-entry WordPress sitemap cap.
+ * @returns {Promise<string[]>} All discovered product URLs
+ */
+async function crawlDropShopShopPages() {
+  const headers = {
+    'User-Agent': config.scraping.userAgent,
+  };
+
+  // Get first page to find total page count
+  let totalPages = 1;
+  try {
+    const firstRes = await axios.get('https://dropshop.com.bd/shop/', { headers, timeout: config.scraping.requestTimeout });
+    const $first = cheerio.load(firstRes.data);
+    const lastPageLink = $first('.woocommerce-pagination .page-numbers:not(.next)').last().text().trim();
+    totalPages = parseInt(lastPageLink) || 1;
+    log.info(`DropShop shop crawler: detected ${totalPages} total shop pages`);
+  } catch (e) {
+    log.error('Failed to determine DropShop total pages', { error: e.message });
+    return [];
+  }
+
+  const allUrls = [];
+  let consecutiveEmpty = 0;
+
+  for (let page = 1; page <= totalPages; page++) {
+    try {
+      await rateLimiter.wait();
+      const url = page === 1
+        ? 'https://dropshop.com.bd/shop/'
+        : `https://dropshop.com.bd/shop/page/${page}/`;
+
+      const res = await axios.get(url, { headers, timeout: config.scraping.requestTimeout });
+      const $ = cheerio.load(res.data);
+      let pageCount = 0;
+
+      $('a').each((i, el) => {
+        const href = $(el).attr('href');
+        if (href && href.match(/\/product\/[^/]+\/$/) && !allUrls.includes(href)) {
+          allUrls.push(href);
+          pageCount++;
+        }
+      });
+
+      if (pageCount === 0) {
+        consecutiveEmpty++;
+        if (consecutiveEmpty >= 3) {
+          log.info(`DropShop shop crawler: 3 consecutive empty pages at page ${page}, stopping`);
+          break;
+        }
+      } else {
+        consecutiveEmpty = 0;
+      }
+
+      if (page % 20 === 0) {
+        log.info(`DropShop shop crawler: scanned ${page}/${totalPages} pages, ${allUrls.length} URLs so far`);
+      }
+    } catch (e) {
+      if (e.response?.status === 404) {
+        log.info(`DropShop shop crawler: page ${page} returned 404, stopping`);
+        break;
+      }
+      log.warn(`DropShop shop crawler: error on page ${page}`, { error: e.message });
+    }
+  }
+
+  log.info(`DropShop shop crawler complete: discovered ${allUrls.length} total product URLs`);
+  return allUrls;
+}
 
 /**
  * Parse a sitemap XML (sitemap index or urlset) and return all product URLs.
@@ -84,6 +157,27 @@ export async function monitorSitemaps(targetSource = null) {
       } catch (error) {
         log.error(`Error processing sitemap: ${sitemapUrl}`, { error: error.message });
       }
+    }
+  }
+
+  // DropShop special: crawl paginated shop pages to discover URLs beyond the 2,000 sitemap cap
+  const shouldCrawlDropShop = !targetSource || targetSource === 'all' || targetSource === 'dropShop';
+  if (shouldCrawlDropShop && config.sources.dropShop) {
+    log.info('Running DropShop shop page crawler (sitemap only exposes 2,000 of ~3,800+ products)...');
+    try {
+      const crawledUrls = await crawlDropShopShopPages();
+      let crawlNew = 0;
+      for (const url of crawledUrls) {
+        if (!isUrlKnown(url)) {
+          addSitemapUrl(url, 'dropShop');
+          crawlNew++;
+          newUrls++;
+        }
+      }
+      totalUrls += crawledUrls.length;
+      log.info(`DropShop shop crawler: added ${crawlNew} new URLs beyond sitemap cap`);
+    } catch (e) {
+      log.error('DropShop shop crawler failed', { error: e.message });
     }
   }
 
