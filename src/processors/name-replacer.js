@@ -49,6 +49,33 @@ export function replaceSourceNames(text) {
 }
 
 /**
+ * Remove trailing site-name suffixes from an SEO meta title.
+ * Examples:
+ *   "Product Name - Giggly Gadgets" → "Product Name"
+ *   "Product Name | DropShop" → "Product Name"
+ *   "Product Name – Giggly Gadgets 2.5 | Dropshipping Platform" → "Product Name"
+ * @param {string} metaTitle
+ * @param {string} productTitle - fallback to the clean product title
+ * @returns {string}
+ */
+function cleanMetaTitle(metaTitle, productTitle) {
+  if (!metaTitle) return productTitle || '';
+
+  // Strip common SEO separators and everything after them
+  // Matches: " - Site Name", " | Site Name", " – Site Name", " › Site Name"
+  let cleaned = metaTitle
+    .replace(/\s*[\|\–\-–—›»]\s*(Giggly\s*Gadgets|DropShop|Drop\s*Shop|Gadget\s*House|Gadget\s*Track|Executive\s*Ample|Gadget\s*Breeze|Accessories\s*Vandar|GadgetZ|Famous\s*Gadget|Dropshipping).*$/gi, '')
+    .trim();
+
+  // If somehow the entire string was the site name, fall back to product title
+  if (!cleaned || cleaned.length < 3) {
+    return productTitle || metaTitle;
+  }
+
+  return cleaned;
+}
+
+/**
  * Process a product object — replace source names in title, descriptions, etc.
  * @param {object} product
  * @returns {object}
@@ -70,8 +97,8 @@ export function processProduct(product) {
     processed.tags = processed.tags.map(tag => replaceSourceNames(tag));
   }
 
-  // Clean up SEO fields
-  processed.meta_title = replaceSourceNames(processed.meta_title);
+  // Clean up SEO fields — strip site name suffixes like " - DropShop" or " | Gadget Breeze"
+  processed.meta_title = cleanMetaTitle(replaceSourceNames(processed.meta_title), processed.title);
   processed.meta_description = replaceSourceNames(processed.meta_description);
 
   log.debug(`Processed product: ${processed.title}`);
