@@ -259,10 +259,11 @@ async function main() {
     console.log('│  [6] Accessories Vandar                  │');
     console.log('│  [7] GadgetZ                             │');
     console.log('│  [8] Famous Gadget                       │');
-    console.log('│  [9] All Websites (Default)              │');
+    console.log('│  [9] RootGear                            │');
+    console.log('│  [10] All Websites (Default)             │');
     console.log('└──────────────────────────────────────────┘\n');
     
-    const answer = await rl.question('Select an option (1-9) [9]: ');
+    const answer = await rl.question('Select an option (1-10) [10]: ');
     rl.close();
     
     switch(answer.trim()) {
@@ -274,6 +275,7 @@ async function main() {
       case '6': targetSource = 'accessoriesVandar'; break;
       case '7': targetSource = 'gadgetZ'; break;
       case '8': targetSource = 'famousGadget'; break;
+      case '9': targetSource = 'rootGear'; break;
       default: targetSource = 'all';
     }
     
