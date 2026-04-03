@@ -64,7 +64,7 @@ function cleanMetaTitle(metaTitle, productTitle) {
   // Strip common SEO separators and everything after them
   // Matches: " - Site Name", " | Site Name", " – Site Name", " › Site Name"
   let cleaned = metaTitle
-    .replace(/\s*[\|\–\-–—›»]\s*(Giggly\s*Gadgets|DropShop|Drop\s*Shop|Gadget\s*House|Gadget\s*Track|Executive\s*Ample|Gadget\s*Breeze|Accessories\s*Vandar|GadgetZ|Famous\s*Gadget|Dropshipping).*$/gi, '')
+    .replace(/\s*[\|\–\-–—›»]\s*(Giggly\s*Gadgets|DropShop|Drop\s*Shop|Gadget\s*House|Gadget\s*Track|Executive\s*Ample|Gadget\s*Breeze|Accessories\s*Vandar|GadgetZ|Famous\s*Gadget|RootGear|Dropshipping).*$/gi, '')
     .trim();
 
   // If somehow the entire string was the site name, fall back to product title

@@ -81,6 +81,14 @@ const config = {
       ],
       priceMarkup: 0,
     },
+    rootGear: {
+      name: 'RootGear',
+      baseUrl: 'https://rootgearbd.com',
+      sitemaps: [
+        // Handled by shop crawler loop
+      ],
+      priceMarkup: 0,
+    },
   },
 
   // Scraping settings
@@ -95,6 +103,8 @@ const config = {
 
   // Name replacements — source names to strip from descriptions
   nameReplacements: [
+    { pattern: /rootgearbd\.com/gi, replacement: 'Giggly Gadgets' },
+    { pattern: /rootgear/gi, replacement: 'Giggly Gadgets' },
     { pattern: /gadget\s*house\s*bd/gi, replacement: 'Giggly Gadgets' },
     { pattern: /gadgethousesbd\.com/gi, replacement: 'Giggly Gadgets' },
     { pattern: /gadgethousesbd/gi, replacement: 'Giggly Gadgets' },

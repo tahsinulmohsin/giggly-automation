@@ -9,6 +9,7 @@ import { monitorSitemaps } from './scrapers/sitemap-monitor.js';
 import { scrapeGadgetHouseProduct } from './scrapers/gadgethouse-scraper.js';
 import { scrapeDropShopProduct } from './scrapers/dropshop-scraper.js';
 import { scrapeGadgetTrackProduct } from './scrapers/gadgettrack-scraper.js';
+import { scrapeRootGearProduct } from './scrapers/rootgear-scraper.js';
 import { scrapeWooCommerceProduct } from './scrapers/woocommerce-scraper.js';
 import { processProduct } from './processors/name-replacer.js';
 import { uploadProduct, updateProductStock } from './uploaders/woo-uploader.js';
@@ -71,6 +72,8 @@ async function stepScrape(limit = 50, targetSource = null) {
       product = await scrapeDropShopProduct(urlRecord.url);
     } else if (urlRecord.source_site === 'gadgetTrack') {
       product = await scrapeGadgetTrackProduct(urlRecord.url);
+    } else if (urlRecord.source_site === 'rootGear') {
+      product = await scrapeRootGearProduct(urlRecord.url);
     } else {
       product = await scrapeWooCommerceProduct(urlRecord.url, urlRecord.source_site);
     }
@@ -154,6 +157,8 @@ async function stepSyncStock(targetSource = null) {
       currentProduct = await scrapeDropShopProduct(product.source_url);
     } else if (product.source_site === 'gadgetTrack') {
       currentProduct = await scrapeGadgetTrackProduct(product.source_url);
+    } else if (product.source_site === 'rootGear') {
+      currentProduct = await scrapeRootGearProduct(product.source_url);
     } else {
       currentProduct = await scrapeWooCommerceProduct(product.source_url, product.source_site);
     }
