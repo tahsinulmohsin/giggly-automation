@@ -1,6 +1,6 @@
 # Giggly Gadgets Automation Pipeline 🚀
 
-![Version](https://img.shields.io/badge/version-2.0.9-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.1-blue.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)
 ![WooCommerce](https://img.shields.io/badge/WooCommerce-REST_API-purple.svg)
 
@@ -101,6 +101,8 @@ Run `npm run sync-stock` to automatically check the stock status of **every uplo
 ---
 
 ## 📦 Releases & Versioning
+- **v2.1.1 (RootGear Integration)** — Added the 9th supplier, RootGear, to the scraping pipeline. Since they do not expose a comprehensive product sitemap, built a custom paginated shop crawler to physically walk their catalog, discovering and extracting prices, stock levels, and variants with identical giggly pipeline mechanics.
+- **v2.1.0 (SEO Title Suffix Stripper)** — Fixed a critical share-preview bug where the WooCommerce Yoast SEO plugin appended "Giggly Gadgets 2.5 | Dropshipping Platform" on top of the already-appended supplier site name (e.g., "Product - DropShop"). Implemented `cleanMetaTitle` to permanently strip supplier suffixes from origin metadata before Woo upload. retroactively scrubbed ~2,900 existing products via WooCommerce Batch API.
 - **v2.0.9 (DropShop Full Catalog Crawler)** — WordPress default sitemaps cap at 2,000 URLs per page. DropShop has ~3,847 products, leaving ~1,847 completely invisible to the scraper. Built a paginated `/shop/` page crawler that walks all 128+ shop pages to discover every product URL. Automatically runs after the normal sitemap scan when DropShop is targeted. First run discovered and queued 1,847 new products.
 - **v2.0.8 (Self-Healing Scraper Queue)** — Permanently eliminated the recurring "0 unprocessed URLs" cache lock by implementing automatic orphan detection. The pipeline now self-heals on every cycle by detecting sitemap URLs marked as processed but with no corresponding product record, and automatically re-queues them.
 - **v2.0.7 (Uploader Stability Patch)** — Fortified the WooCommerce uploader payload generator against `400 Bad Request` crashes caused by malformed/empty image URLs from source websites. Added strict `http` prefix validation on all image arrays. Doubled the HTTP request timeout from 15s to 30s to prevent Executive Ample sitemap timeouts. Removed deprecated DropShop sitemap page 2.
