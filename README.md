@@ -1,6 +1,6 @@
 # Giggly Gadgets Automation Pipeline 🚀
 
-![Version](https://img.shields.io/badge/version-2.1.1-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.2-blue.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)
 ![WooCommerce](https://img.shields.io/badge/WooCommerce-REST_API-purple.svg)
 
@@ -101,6 +101,7 @@ Run `npm run sync-stock` to automatically check the stock status of **every uplo
 ---
 
 ## 📦 Releases & Versioning
+- **v2.1.2 (Dynamic Stock & Price Sync)** — Upgraded the `npm run sync-stock` routine to natively track and mirror price fluctuations. Whenever the pipeline verifies product stock against the origin source, it also dynamically compares the database price to the scraped price. If the supplier changes their pricing (higher or lower), the automation accurately patches the WooCommerce product payload with the new `regular_price` and `sale_price` directly via the API.
 - **v2.1.1 (RootGear Integration)** — Added the 9th supplier, RootGear, to the scraping pipeline. Since they do not expose a comprehensive product sitemap, built a custom paginated shop crawler to physically walk their catalog, discovering and extracting prices, stock levels, and variants with identical giggly pipeline mechanics.
 - **v2.1.0 (SEO Title Suffix Stripper)** — Fixed a critical share-preview bug where the WooCommerce Yoast SEO plugin appended "Giggly Gadgets 2.5 | Dropshipping Platform" on top of the already-appended supplier site name (e.g., "Product - DropShop"). Implemented `cleanMetaTitle` to permanently strip supplier suffixes from origin metadata before Woo upload. retroactively scrubbed ~2,900 existing products via WooCommerce Batch API.
 - **v2.0.9 (DropShop Full Catalog Crawler)** — WordPress default sitemaps cap at 2,000 URLs per page. DropShop has ~3,847 products, leaving ~1,847 completely invisible to the scraper. Built a paginated `/shop/` page crawler that walks all 128+ shop pages to discover every product URL. Automatically runs after the normal sitemap scan when DropShop is targeted. First run discovered and queued 1,847 new products.
