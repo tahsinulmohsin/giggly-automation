@@ -4,7 +4,7 @@ import { createModuleLogger } from './utils/logger.js';
 import { RateLimiter, sleep } from './utils/rate-limiter.js';
 import { initDatabase, getUnprocessedUrls, markUrlProcessed, upsertProduct,
   getProductsToUpload, markProductUploaded, markProductError,
-  getUploadedProducts, updateStockStatus, getStats, resetOrphanedUrls } from './db/database.js';
+  getUploadedProducts, updateSyncStatus, getStats, resetOrphanedUrls } from './db/database.js';
 import { monitorSitemaps } from './scrapers/sitemap-monitor.js';
 import { scrapeGadgetHouseProduct } from './scrapers/gadgethouse-scraper.js';
 import { scrapeDropShopProduct } from './scrapers/dropshop-scraper.js';
@@ -12,7 +12,7 @@ import { scrapeGadgetTrackProduct } from './scrapers/gadgettrack-scraper.js';
 import { scrapeRootGearProduct } from './scrapers/rootgear-scraper.js';
 import { scrapeWooCommerceProduct } from './scrapers/woocommerce-scraper.js';
 import { processProduct } from './processors/name-replacer.js';
-import { uploadProduct, updateProductStock } from './uploaders/woo-uploader.js';
+import { uploadProduct, updateProductData } from './uploaders/woo-uploader.js';
 import config from './config.js';
 
 const log = createModuleLogger('main');
@@ -163,13 +163,36 @@ async function stepSyncStock(targetSource = null) {
       currentProduct = await scrapeWooCommerceProduct(product.source_url, product.source_site);
     }
 
-    if (currentProduct && currentProduct.stock_status !== product.stock_status) {
-      updateStockStatus(product.source_url, currentProduct.stock_status);
-      if (product.wc_product_id) {
-        await updateProductStock(product.wc_product_id, currentProduct.stock_status);
+    if (currentProduct) {
+      // Process it so price markup logic applies
+      const processedCurrent = processProduct(currentProduct);
+
+      const stockChanged = processedCurrent.stock_status !== product.stock_status;
+      const priceChanged = processedCurrent.final_price !== product.final_price || processedCurrent.regular_price !== product.regular_price;
+
+      if (stockChanged || priceChanged) {
+        updateSyncStatus(product.source_url, processedCurrent.stock_status, processedCurrent.regular_price, processedCurrent.final_price);
+        
+        if (product.wc_product_id) {
+          const payload = {};
+          if (stockChanged) payload.stock_status = processedCurrent.stock_status;
+          if (priceChanged) {
+            payload.regular_price = String(processedCurrent.regular_price || '');
+            if (processedCurrent.sale_price && processedCurrent.sale_price < processedCurrent.regular_price) {
+              payload.sale_price = String(processedCurrent.sale_price);
+            } else {
+              payload.sale_price = '';
+            }
+          }
+          await updateProductData(product.wc_product_id, payload);
+        }
+        
+        updated++;
+        log.info(`Sync updated [${product.slug}]:`, {
+          stock: stockChanged ? `${product.stock_status} -> ${processedCurrent.stock_status}` : 'unchanged',
+          price: priceChanged ? `${product.final_price} -> ${processedCurrent.final_price}` : 'unchanged'
+        });
       }
-      updated++;
-      log.info(`Stock updated: ${product.title} → ${currentProduct.stock_status}`);
     }
   }
 

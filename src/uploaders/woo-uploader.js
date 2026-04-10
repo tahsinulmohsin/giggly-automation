@@ -361,18 +361,16 @@ export async function uploadProduct(product, localImagePaths = []) {
 }
 
 /**
- * Update the stock status of an existing product on giggly.shop.
+ * Update specific data (like stock, price) for an existing product on giggly.shop.
  * @param {number} wcProductId
- * @param {string} stockStatus - 'instock' or 'outofstock'
+ * @param {object} payload - The fields to update on WooCommerce
  */
-export async function updateProductStock(wcProductId, stockStatus) {
+export async function updateProductData(wcProductId, payload) {
   try {
-    await getApi().put(`products/${wcProductId}`, {
-      stock_status: stockStatus,
-    });
-    log.info(`Updated stock for product #${wcProductId}: ${stockStatus}`);
+    await getApi().put(`products/${wcProductId}`, payload);
+    log.info(`Updated data for product #${wcProductId}`, payload);
   } catch (error) {
-    log.error(`Failed to update stock for product #${wcProductId}`, {
+    log.error(`Failed to update data for product #${wcProductId}`, {
       error: error.message,
     });
   }

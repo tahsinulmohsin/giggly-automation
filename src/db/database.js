@@ -216,13 +216,13 @@ export function getUploadedProducts() {
   ).all();
 }
 
-export function updateStockStatus(sourceUrl, stockStatus) {
+export function updateSyncStatus(sourceUrl, stockStatus, regularPrice, finalPrice) {
   getDb().prepare(`
     UPDATE products SET
-      stock_status = ?, last_synced_at = datetime('now'),
+      stock_status = ?, regular_price = ?, final_price = ?, last_synced_at = datetime('now'),
       updated_at = datetime('now')
     WHERE source_url = ?
-  `).run(stockStatus, sourceUrl);
+  `).run(stockStatus, regularPrice, finalPrice, sourceUrl);
 }
 
 export function getStats() {
